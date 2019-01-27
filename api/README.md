@@ -19,5 +19,5 @@ On a WSL it probable wont get the hot reload working so start redis and mongo co
 ```
 docker-compose up -d redis
 docker-compose up -d mongo
-npm run dev
+MONGO_URI=mongodb://localhost/rsvp npm run dev
 ```
