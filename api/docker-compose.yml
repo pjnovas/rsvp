@@ -1,0 +1,61 @@
+version: "3.0"
+
+services:
+
+  api:
+    build:
+      context: .
+    image: api
+    env_file: docker-compose.env
+    environment:
+      SERVICES: api
+      PORT: 3100
+    links:
+      - redis
+    depends_on:
+      - redis
+    labels:
+      - "traefik.enable=true"   
+      - "traefik.backend=api"
+      - "traefik.port=3100"
+      - "traefik.frontend.entryPoints=http"
+      - "traefik.frontend.rule=PathPrefix:/"
+
+  events:
+    build:
+      context: .
+    image: events
+    env_file: docker-compose.env
+    environment:
+      SERVICES: events
+    links:
+      - redis
+      - mongo
+    depends_on:
+      - redis
+      - mongo
+
+  mongo:
+    image: mongo
+    volumes:
+      - mongodata:/data/db
+    ports:
+      - "27017:27017"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  traefik:
+    image: traefik
+    command: --web --docker --docker.domain=docker.localhost --logLevel=INFO --docker.exposedbydefault=false
+    ports:
+      - "3100:80"
+      - "3001:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dev/null:/traefik.toml
+
+volumes:
+  mongodata:
